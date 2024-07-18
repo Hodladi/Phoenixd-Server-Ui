@@ -3,7 +3,7 @@
 You can either self-host it with this repo or you can use it through https://wallet.nostrich.cc by adding your phoenixd server url and password in settings.
 The settings is only saved in local storage on your device.
 
-```git pull https://github.com/Hodladi/Phoenixd-Server-Ui.git```
+```git clone https://github.com/Hodladi/Phoenixd-Server-Ui.git```
 
 ```cd Phoenixd-Server-Ui```
 
