@@ -1,0 +1,70 @@
+trigger:
+- master
+
+pool:
+  name: 'freber-server-agent'
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+stages:
+- stage: Build
+  jobs:
+  - job: BuildJob
+    steps:
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '8.x'
+        installationPath: $(Agent.ToolsDirectory)/dotnet
+
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'build'
+        projects: '**/*.csproj'
+        arguments: '--configuration $(buildConfiguration)'
+
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'publish'
+        publishWebProjects: true
+        arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+        zipAfterPublish: true
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+
+- stage: Deploy
+  dependsOn: Build
+  condition: succeeded('Build')
+  jobs:
+  - deployment: DeploymentJob
+    environment: 'BC-Production'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              buildType: 'current'
+              downloadType: 'single'
+              artifactName: 'drop'
+              downloadPath: '$(System.ArtifactsDirectory)'
+
+          - task: IISWebAppDeploymentOnMachineGroup@0
+            inputs:
+              WebSiteName: "Wallet"
+              Package: "$(System.ArtifactsDirectory)/**/*.zip"
+              RemoveAdditionalFilesFlag: true
+              TakeAppOfflineFlag: true
+              XmlTransformation: true
