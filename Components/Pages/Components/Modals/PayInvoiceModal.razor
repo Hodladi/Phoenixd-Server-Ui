@@ -1,0 +1,125 @@
+﻿@using Wallet.Enums
+@using Wallet.Models
+@using Wallet.Services
+@inject IModalService ModalService
+@inject IApiService ApiService
+@inject IInvoiceTypeService InvoiceTypeService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+
+<ModalWrapper>
+	<ModalHeader>
+		<span class="modal-title">Pay invoice</span>
+	</ModalHeader>
+	<ModalBody>
+        <div class="mb-3">
+            <label for="amount" class="form-label">Amount (sats): </label>
+            <input type="number" class="form-control" id="amount" @bind="DecodedInvoiceDetails.AmountSat" @ref="_amountInput" tabindex="1" readonly="@HasAmount" />
+        </div>
+		@if (_amountNeeded)
+        {
+            <div class="mb-3">
+                <span>An amount needs to be provided...</span>
+            </div>
+        }
+        @if (!string.IsNullOrEmpty(DecodedInvoiceDetails.Description))
+        {
+            <div>
+                <label for="description" class="form-label">Description: </label>
+                <textarea class="form-control" id="description" readonly>@DecodedInvoiceDetails.Description</textarea>
+            </div>
+        }
+	</ModalBody>
+	<ModalFooter>
+        <button type="button" class="btn btn-outline-light custom-button" @onclick="CloseModal">Close</button>
+		<button class="btn btn-outline-light custom-button" @onclick="PayInvoice" disabled="@DisableButton">Pay</button>
+	</ModalFooter>
+</ModalWrapper>
+
+@code {
+	[CascadingParameter] public BlazoredModalInstance ModalInstance { get; set; } = default!;
+	[Parameter] public ApiRequest DecodedInvoiceDetails { get; set; } = new();
+
+	private bool DisableButton { get; set; }
+	private bool HasAmount => DecodedInvoiceDetails.AmountSat.HasValue && DecodedInvoiceDetails.AmountSat.Value > 0;
+	private ElementReference _amountInput;
+	private bool _amountNeeded = false;
+	private ApiResponse _result { get; set; } = new();
+
+	protected override async Task OnParametersSetAsync()
+	{
+		await DecodeInvoiceIfNeeded();
+	}
+
+	private async Task DecodeInvoiceIfNeeded()
+	{
+		if (DecodedInvoiceDetails.Invoice == null)
+		{
+			return;
+		}
+
+		var invoiceType = InvoiceTypeService.DetermineInvoiceType(DecodedInvoiceDetails.Invoice.ToLower());
+
+		if (invoiceType == InvoiceType.Bolt11Invoice)
+		{
+			var decodedInvoice = await ApiService.DecodeBolt11InvoiceAsync(DecodedInvoiceDetails.Invoice);
+			DecodedInvoiceDetails.AmountSat = decodedInvoice.AmountSat;
+			DecodedInvoiceDetails.Description = decodedInvoice.Description;
+			DecodedInvoiceDetails.Message = decodedInvoice.Message;
+			StateHasChanged();
+		}
+	}
+
+	private async Task PayInvoice()
+    {
+        _amountNeeded = false;
+        if (!DecodedInvoiceDetails.AmountSat.HasValue)
+        {
+            _amountNeeded = true;
+            DisableButton = false;
+            return;
+        }
+		DisableButton = true;
+		var invoiceType = InvoiceTypeService.DetermineInvoiceType(DecodedInvoiceDetails.Invoice!.ToLower());
+		switch (invoiceType)
+		{
+			case InvoiceType.Bolt11Invoice:
+				_result = await ApiService.PayBolt11Invoice(DecodedInvoiceDetails);
+				break;
+			case InvoiceType.Bolt12Offer:
+				_result = await ApiService.PayBolt12Invoice(DecodedInvoiceDetails);
+				break;
+			case InvoiceType.LNURLPay:
+				_result = await ApiService.PayLnurlInvoice(DecodedInvoiceDetails);
+				break;
+			case InvoiceType.LightningAddress:
+				_result = await ApiService.PayLightningAddress(DecodedInvoiceDetails);
+				break;
+			default:
+				throw new ArgumentOutOfRangeException(nameof(invoiceType), invoiceType, null);
+		}
+		await ModalInstance.CloseAsync();
+		DisableButton = false;
+		await OpenNextModal(_result);
+	}
+
+	private async Task OpenNextModal(ApiResponse response)
+	{
+		var parameters = new ModalParameters();
+		parameters.Add("PaymentResponse", response);
+		ModalService.Show<PaymentResult>("Payment result", parameters);
+	}
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			await _amountInput.FocusAsync();
+		}
+	}
+
+	private async Task CloseModal()
+	{
+		await ModalInstance.CloseAsync();
+	}
+}

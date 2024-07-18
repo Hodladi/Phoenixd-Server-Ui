@@ -1,0 +1,193 @@
+﻿.home-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    height: 100vh;
+    padding: 1rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.home-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.home-menu-button, .home-refresh-button, .home-settings-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.home-balance {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+    width: 100%;
+    margin-top: -8rem;
+}
+
+.home-balance-amount {
+    font-size: 4rem;
+    text-align: center;
+}
+
+.amount-type {
+    color: orange;
+    text-align: center;
+    font-size: 3.5rem;
+}
+
+@media (max-width: 640px) {
+    .home-balance-amount {
+        font-size: 3.2rem;
+    }
+
+    .amount-type {
+        font-size: 2.7rem;
+    }
+}
+
+.spinner-border {
+    font-size: 1.5rem;
+    text-align: center;
+}
+
+.home-actions {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    position: absolute;
+    bottom: 8rem;
+    padding: 0 1rem;
+}
+
+.home-qr-icon {
+    font-size: 2.5rem;
+}
+
+.home-receive-button, .home-send-button {
+    background-color: transparent;
+    border: 1px solid #fff;
+    color: white;
+    padding: 0.75rem;
+    font-size: 1rem;
+    margin: 0 0.5rem;
+    flex: 1;
+}
+
+.home-receive-button, .home-send-button {
+    flex: 1.5;
+}
+
+@media (max-width: 640.98px) {
+    .home-actions button {
+        margin: 0 0.25rem;
+    }
+}
+
+@media (min-width: 641px) {
+    .home-actions button {
+        margin: 0 0.5rem;
+    }
+}
+
+.home-transactions-button {
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: auto;
+    display: flex;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0px;
+    border-radius: 5px;
+    pointer-events: auto;
+}
+
+.home-transactions-overlay {
+    position: fixed;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 1);
+    transition: top 0.3s ease;
+    z-index: 900;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+}
+
+    .home-transactions-overlay.show {
+        top: 0;
+        pointer-events: auto;
+    }
+
+.home-transactions-header {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 1);
+    z-index: 1001;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.5rem;
+}
+
+.home-transactions-close-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.home-transactions-list {
+    padding: 20px;
+    color: white;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-grow: 1;
+    max-height: 100%;
+    pointer-events: auto;
+}
+
+.home-incoming-amount {
+    color: green;
+}
+
+.home-outgoing-amount {
+    color: white;
+}
+
+.home-side-menu-overlay {
+    position: fixed;
+    top: -100vh;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #222222;
+    transition: top 0.3s ease;
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+}
+
+    .home-side-menu-overlay.show {
+        top: 0;
+        pointer-events: auto;
+    }

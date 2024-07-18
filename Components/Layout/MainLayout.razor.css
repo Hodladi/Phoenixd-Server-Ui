@@ -1,0 +1,9 @@
+.page {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    background-color: black;
+    color: white;
+    font-family: 'Pixeloid Sans', PixeloidSans, monospace;
+    position: relative;
+}

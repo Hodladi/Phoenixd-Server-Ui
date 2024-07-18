@@ -1,0 +1,95 @@
+﻿@using Wallet.Models
+@using Wallet.Services
+@inject IApiService ApiService
+@inject IModalService Modal
+@inject IQrCodeService QrCodeService
+
+<ModalWrapper>
+    <ModalHeader>
+        <span class="modal-title">Create invoice</span>
+    </ModalHeader>
+    <ModalBody>
+        <div class="mb-3">
+            <label for="amount" class="form-label">Amount (sats)</label>
+            <input type="number" class="form-control" id="amount" @bind="_apiRequest.AmountSat" @ref="_amountInput" @oninput="OnAmountInput" tabindex="1" />
+        </div>
+        @if (_amountNeeded)
+        {
+            <div class="mb-3">
+                <span>An amount needs to be provided...</span>
+            </div>
+        }
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <input type="text" class="form-control" id="description" @bind="_apiRequest.Description" tabindex="2" />
+        </div>
+    </ModalBody>
+    <ModalFooter>
+        <button type="button" class="btn btn-outline-light custom-button me-2" @onclick="() => ModalInstance.CancelAsync()">Close</button>
+        <button class="btn btn-outline-light custom-button" @onclick="GenerateInvoice" disabled="@DisableButton">QR</button>
+    </ModalFooter>
+</ModalWrapper>
+
+@code {
+    [CascadingParameter] public BlazoredModalInstance ModalInstance { get; set; } = default!;
+
+    private ApiRequest _apiRequest = new();
+    private bool DisableButton { get; set; } = true;
+    private bool _amountNeeded = false;
+    private ElementReference _amountInput;
+
+    private void OnAmountInput(ChangeEventArgs e)
+    {
+        var amount = e.Value?.ToString();
+        if (int.TryParse(amount, out var parsedAmount) && parsedAmount > 0)
+        {
+            _apiRequest.AmountSat = parsedAmount;
+            DisableButton = false;
+        }
+        else
+        {
+            DisableButton = true;
+        }
+        StateHasChanged();
+    }
+
+    private async Task GenerateInvoice()
+    {
+        _amountNeeded = false;
+        if (!_apiRequest.AmountSat.HasValue)
+        {
+            _amountNeeded = true;
+            DisableButton = false;
+            return;
+        }
+        DisableButton = true;
+        var response = await ApiService.CreateBolt11InvoiceAsync(_apiRequest);
+
+        if (response != null)
+        {
+            var qrCodeData = await QrCodeService.GenerateQrCode(response.Serialized!);
+
+            var parameters = new ModalParameters();
+            parameters.Add("Amount", response.AmountSat);
+            parameters.Add("Description", _apiRequest.Description);
+            parameters.Add("QrCodeData", qrCodeData);
+            parameters.Add("InvoiceString", response.Serialized);
+
+            await ModalInstance.CloseAsync();
+
+            Modal.Show<Bolt11QrModal>("BOLT11 QR Code", parameters);
+        }
+
+        DisableButton = false;
+        _apiRequest.AmountSat = null;
+        _apiRequest.Description = string.Empty;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _amountInput.FocusAsync();
+        }
+    }
+}

@@ -1,0 +1,57 @@
+﻿@using Wallet.Services
+@inject IApiService ApiService
+@inject IModalService ModalService
+@inject IQrCodeService QrCodeService
+
+<ModalWrapper>
+    <ModalHeader>
+        <span class="modal-title">Select Invoice Type</span>
+    </ModalHeader>
+    <ModalBody>
+        <div class="button-container text-center">
+            <button class="btn btn-outline-light custom-button wide-button" @onclick="SelectBolt11">BOLT11</button>
+            <button class="btn btn-outline-light custom-button wide-button" @onclick="SelectBolt12">BOLT12</button>
+        </div>
+    </ModalBody>
+    <ModalFooter>
+        <button type="button" class="btn btn-outline-light custom-button" @onclick="() => ModalInstance.CancelAsync()">Close</button>
+    </ModalFooter>
+</ModalWrapper>
+
+@code {
+    [CascadingParameter] public BlazoredModalInstance ModalInstance { get; set; } = default!;
+    [Parameter] public EventCallback<string> OnSelection { get; set; }
+
+    private async Task SelectBolt11()
+    {
+        await OnSelection.InvokeAsync("BOLT11");
+        await ModalInstance.CloseAsync();
+        await OpenNextModal("BOLT11");
+    }
+
+    private async Task SelectBolt12()
+    {
+        await OnSelection.InvokeAsync("BOLT12");
+        await ModalInstance.CloseAsync();
+        await OpenNextModal("BOLT12");
+    }
+
+    private async Task OpenNextModal(string selection)
+    {
+        var parameters = new ModalParameters();
+        if (selection == "BOLT11")
+        {
+            ModalService.Show<CreateInvoiceModal>("Create BOLT11 Invoice");
+        }
+        else if (selection == "BOLT12")
+        {
+            var bolt12Offer = await ApiService.GetBolt12OfferAsync();
+            var bolt12LnAddress = await ApiService.GetBolt12LnAddress();
+            var qrCodeData = await QrCodeService.GenerateQrCode(bolt12Offer.Offer);
+            parameters.Add("QrCodeData", qrCodeData);
+            parameters.Add("Bolt12LnAddress", bolt12LnAddress);
+            parameters.Add("InvoiceString", bolt12Offer.Offer);
+            ModalService.Show<Bolt12QrModal>("BOLT12 QR Code", parameters);
+        }
+    }
+}

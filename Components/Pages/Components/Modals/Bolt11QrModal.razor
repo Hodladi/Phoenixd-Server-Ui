@@ -1,0 +1,116 @@
+﻿@using System.Text.Json
+@using Wallet.Models
+@using Wallet.Services
+@inject IJSRuntime JSRuntime
+@inject IWebSocketService WebSocketService
+@inject IModalService ModalService
+@inject NavigationManager NavigationManager
+
+<ModalWrapper>
+    <ModalHeader>
+        <span class="modal-title">Select Invoice Type</span>
+    </ModalHeader>
+    <ModalBody>
+        @if (!string.IsNullOrEmpty(QrCodeData))
+        {
+            <div class="text-center">
+                <div>
+                    <img width="85%" src="data:image/svg+xml;base64,@QrCodeData" alt="QR Code" @onclick="CopyQrCodeData" style="cursor: pointer;" />
+                </div>
+                <div class="mt-2">
+                    <span>Amount: @Amount sats</span><br />
+                </div>
+            </div>
+        }
+    </ModalBody>
+    <ModalFooter>
+        <button type="button" class="btn btn-outline-light custom-button" @onclick="Close">Close</button>
+    </ModalFooter>
+</ModalWrapper>
+
+@code {
+    [CascadingParameter] public BlazoredModalInstance ModalInstance { get; set; } = default!;
+    [Parameter] public int Amount { get; set; }
+    [Parameter] public string Description { get; set; } = string.Empty;
+    [Parameter] public string QrCodeData { get; set; } = string.Empty;
+    [Parameter] public string InvoiceString { get; set; } = string.Empty;
+
+    private string _wsUri = string.Empty;
+    private string _authToken = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var baseUrl = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "baseUrl");
+        var authToken = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "password");
+
+        if (string.IsNullOrEmpty(baseUrl) || string.IsNullOrEmpty(authToken))
+        {
+            throw new InvalidOperationException("WebSocket URI or Auth Token is not set in localStorage.");
+        }
+
+        _wsUri = baseUrl.Replace("http://", "ws://").Replace("https://", "wss://") + "/websocket";
+        _authToken = authToken;
+
+        WebSocketService.OnMessageReceived += HandleMessageReceived;
+        await WebSocketService.ConnectAsync(_wsUri, _authToken);
+    }
+
+    private async void HandleMessageReceived(string message)
+    {
+        try
+        {
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
+            PaymentNotification paymentNotification = JsonSerializer.Deserialize<PaymentNotification>(message, options);
+        
+            if (paymentNotification?.Type == "payment_received")
+            {
+                await InvokeAsync(async () =>
+                {
+                    await Close();
+                    await ShowPaymentReceivedModal(paymentNotification);
+                });
+            }
+        }
+        catch (JsonException jsonException)
+        {
+            Console.WriteLine($"Deserialization error: {jsonException.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
+        }
+    }
+
+    private async Task ShowPaymentReceivedModal(PaymentNotification paymentNotification)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add("AmountSat", paymentNotification.AmountSat);
+        parameters.Add("PaymentHash", paymentNotification.PaymentHash);
+        parameters.Add("Timestamp", paymentNotification.Timestamp);
+        parameters.Add("ExternalId", paymentNotification.ExternalId);
+        ModalService.Show<PaymentReceivedModal>("Payment Received", parameters);
+    }
+
+    private async Task CopyQrCodeData()
+    {
+        if (!string.IsNullOrEmpty(InvoiceString))
+        {
+            await JSRuntime.InvokeVoidAsync("copyToClipboard", InvoiceString);
+        }
+    }
+
+    private async Task Close()
+    {
+        await WebSocketService.DisconnectAsync();
+        await ModalInstance.CloseAsync();
+    }
+
+    public void Dispose()
+    {
+        WebSocketService.OnMessageReceived -= HandleMessageReceived;
+    }
+}

@@ -1,0 +1,32 @@
+﻿@inject NavigationManager NavigationManager
+
+<ModalWrapper>
+    <ModalHeader>
+        <span class="modal-title">Payment Received</span>
+    </ModalHeader>
+    <ModalBody>
+        <div>
+            <p>Received amount: <span class="bold-text">@AmountSat?.ToString("N0") sats</span></p>
+            <p>Time: <span class="bold-text">@FormattedTimestamp</span></p>
+            <p>Payment Hash: <span class="wrap-text bold-text">@PaymentHash</span></p>
+        </div>
+    </ModalBody>
+    <ModalFooter>
+        <button type="button" class="btn btn-outline-light custom-button" @onclick="Close">Close</button>
+    </ModalFooter>
+</ModalWrapper>
+
+@code {
+    [CascadingParameter] public BlazoredModalInstance ModalInstance { get; set; } = default!;
+    [Parameter] public long? AmountSat { get; set; }
+    [Parameter] public string? PaymentHash { get; set; }
+    [Parameter] public long? Timestamp { get; set; }
+    [Parameter] public string? ExternalId { get; set; }
+
+    private string FormattedTimestamp => Timestamp != null ? DateTimeOffset.FromUnixTimeMilliseconds(Timestamp.Value).ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "N/A";
+
+    private async Task Close()
+    {
+        NavigationManager.NavigateTo("/", forceLoad: true);
+    }
+}

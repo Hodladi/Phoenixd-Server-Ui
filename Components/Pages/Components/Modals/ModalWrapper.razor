@@ -1,0 +1,23 @@
+﻿<div class="custom-modal">
+    <div class="modal-header custom-header">
+        <div class="modal-title">
+            @ModalHeader
+        </div>
+    </div>
+    <div class="modal-body">
+        <div class="container-fluid">
+            @ModalBody
+        </div>
+    </div>
+    <div class="modal-footer custom-footer">
+        <div class="modal-footer-button-container">
+            @ModalFooter
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ModalHeader { get; set; }
+    [Parameter] public RenderFragment? ModalBody { get; set; }
+    [Parameter] public RenderFragment? ModalFooter { get; set; }
+}

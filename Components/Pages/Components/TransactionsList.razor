@@ -1,0 +1,59 @@
+﻿@using Wallet.Enums
+@using Wallet.Models
+
+<div class="transactions-list">
+    <div class="transactions-list-header">
+        <button class="btn btn-link text-white transactions-close-button" @onclick="CloseTransactions">
+            <i class="bi bi-chevron-down close-button"></i>
+        </button>
+    </div>
+    <div class="transactions-list-content">
+        @if (IsLoading)
+        {
+            <div>Loading...</div>
+        }
+        else if (Transactions != null && Transactions.Any())
+        {
+            <div class="transactions-list-wrapper">
+                <div class="transactions-list-row-header transactions-list-header-row">
+                    <div class="transactions-list-cell wide-cell">Date</div>
+                    <div class="transactions-list-cell">Time</div>
+                    <div class="transactions-list-cell text-end">Fee</div>
+                    <div class="transactions-list-cell wide-cell text-end">Amount</div>
+                </div>
+                @foreach (var transaction in Transactions)
+                {
+                    <div class="transactions-list-row">
+                        <div class="transactions-list-cell wide-cell">@transaction.Date.ToString("yyyy-MM-dd")</div>
+                        <div class="transactions-list-cell">@transaction.Date.ToString("HH:mm")</div>
+                        <div class="transactions-list-cell text-end">@(transaction.Fee == 0 ? String.Empty : transaction.Fee.ToString("N0"))</div>
+                        <div class="transactions-list-cell wide-cell text-end @(transaction.Type == TransactionType.Incoming ? "incoming" : "outgoing")">@(transaction.Type == TransactionType.Incoming ? "+" : "-")@transaction.Amount.ToString("N0")</div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div>No transactions available</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public List<Transaction> Transactions { get; set; } = new();
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    private bool _showTransactions = false;
+
+    private async Task CloseTransactions()
+    {
+        _showTransactions = false;
+        await OnClose.InvokeAsync();
+    }
+
+    public void ShowTransactions()
+    {
+        _showTransactions = true;
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,224 @@
+﻿@page "/"
+@using Wallet.Enums
+@using Wallet.Models
+@using Wallet.Services
+
+@inject IJSRuntime JS
+@inject IApiService ApiService
+@inject IModalService Modal
+@inject NavigationManager NavigationManager
+
+<PageTitle>Wallet</PageTitle>
+
+<div class="home-container">
+    <div class="home-header">
+        <button class="btn btn-link text-white home-settings-button" @onclick="OpenSettings"><i class="bi bi-gear"></i></button>
+        <button class="btn btn-link home-menu-button @(_showMenu ? "" : "top")" @onclick="ToggleMenu">
+            <i class="bi bi-chevron-down"></i>
+        </button>
+        <button class="btn btn-link text-white home-refresh-button" @onclick="Refresh"><i class="bi bi-arrow-clockwise @(_isLoading ? "spinner" : "")"></i></button>
+    </div>
+
+    <div class="home-balance">
+        @if (_isLoading)
+        {
+            <div class="spinner-border text-light" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        }
+        else
+        {
+            <div class="home-balance" @onclick="ToggleBalance">
+                @if (_showInBtc)
+                {
+                    <div class="col">
+                        <div class="row">
+                            <span class="home-balance-amount">@BalanceInBtc</span>
+                        </div>
+                        <div class="row">
+                            <span class="amount-type">btc</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="col">
+                        <div class="row">
+                            <span class="home-balance-amount">@BalanceAmount.ToString("N0") </span>
+                        </div>
+                        <div class="row">
+                            <span class="amount-type">sats</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="home-actions">
+        <button class="btn btn-outline-light home-receive-button" @onclick="OpenReceiveModal" disabled="@_isLoading">RECEIVE</button>
+        <div class="mx-2">
+            <i class="bi bi-qr-code-scan home-qr-icon" @onclick="OpenQrScanner"></i>
+        </div>
+        <button class="btn btn-outline-light home-send-button" @onclick="OpenSendModal" disabled="@_isLoading">SEND</button>
+    </div>
+
+    <button class="btn btn-link home-transactions-button" hidden="@(_showTransactions)" @onclick="ToggleTransactions">
+        <i class="bi bi-chevron-up home-menu-button"></i>
+    </button>
+</div>
+
+<div class="home-side-menu-overlay @(_showMenu ? "show" : "")">
+    <SideMenu NodeInfo="NodeInfo" IsLoading="@_isLoading" OnClose="ToggleMenu" />
+</div>
+
+<div class="home-transactions-overlay @(_showTransactions ? "show" : "")">
+    <TransactionsList Transactions="_transactions" IsLoading="@_isLoading" OnClose="ToggleTransactions" />
+</div>
+
+@code {
+    private bool _showMenu = false;
+    private bool _showTransactions = false;
+    private bool _isLoading = true;
+    private ApiResponse? NodeInfo;
+    private List<Transaction> _transactions = new();
+    private bool _initialized = false;
+
+    private bool _showInBtc = false;
+    private int BalanceAmount = 123456789;
+    private string BalanceInBtc => (BalanceAmount / 100000000m).ToString("N8");
+
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _initialized = true;
+
+            var baseUrl = await JS.InvokeAsync<string>("localStorage.getItem", "baseUrl");
+            var password = await JS.InvokeAsync<string>("localStorage.getItem", "password");
+
+            if (string.IsNullOrEmpty(baseUrl) || string.IsNullOrEmpty(password))
+            {
+                await OpenSettings();
+            }
+            else
+            {
+                try
+                {
+                    await InitializeAndLoadDataAsync();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error initializing and loading data: {ex.Message}");
+                    await OpenSettings();
+                }
+                finally
+                {
+                    _isLoading = false;
+                    StateHasChanged();
+                }
+            }
+        }
+    }
+
+    private async Task InitializeAndLoadDataAsync()
+    {
+        await ApiService.InitializeAsync();
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        NodeInfo = await ApiService.GetNodeInfoAsync();
+        if (NodeInfo == null)
+        {
+            throw new Exception("Failed to load node info. Check server settings.");
+        }
+        BalanceAmount = NodeInfo.Channels.Sum(x => x.BalanceSat);
+
+        var outgoingPayments = await ApiService.GetOutgoingPaymentsAsync();
+        var incomingPayments = await ApiService.GetIncomingPaymentsAsync();
+
+        _transactions = outgoingPayments!.Select(p => new Transaction
+            {
+                Date = DateTimeOffset.FromUnixTimeMilliseconds(p.CompletedAt).DateTime,
+                Amount = p.Sent,
+                Type = TransactionType.Outgoing,
+                OriginalTransaction = p,
+                Fee = p.Fees / 1000
+            }).ToList();
+
+        _transactions.AddRange(incomingPayments!.Select(p => new Transaction
+            {
+                Date = p.CompletedAt.HasValue ? DateTimeOffset.FromUnixTimeMilliseconds(p.CompletedAt.Value).DateTime : DateTimeOffset.FromUnixTimeMilliseconds(p.CreatedAt).DateTime,
+                Amount = p.ReceivedSat,
+                Type = TransactionType.Incoming,
+                OriginalTransaction = p
+            }));
+
+        _transactions = _transactions.OrderByDescending(t => t.Date).ToList();
+    }
+
+    private async Task ToggleMenu()
+    {
+        _showMenu = !_showMenu;
+        if (_showMenu)
+        {
+            await JS.InvokeVoidAsync("showMenu");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("hideMenu");
+        }
+    }
+
+    private async Task ToggleTransactions()
+    {
+        _showTransactions = !_showTransactions;
+        if (_showTransactions)
+        {
+            await JS.InvokeVoidAsync("scrollToTransactions");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("scrollToTop");
+        }
+    }
+
+    private void OpenQrScanner()
+    {
+        Modal.Show<QrScannerModal>("QR Code Scanner");
+    }
+
+    private async Task OpenReceiveModal()
+    {
+        var parameters = new ModalParameters();
+        var options = new ModalOptions { DisableBackgroundCancel = false };
+        Modal.Show<BoltSelectionModal>("Select Invoice Type", parameters, options);
+    }
+
+    private async Task OpenSendModal()
+    {
+        var parameters = new ModalParameters();
+        var options = new ModalOptions { DisableBackgroundCancel = false };
+        Modal.Show<EnterInvoiceModal>("Enter Invoice", parameters, options);
+    }
+
+    private async Task OpenSettings()
+    {
+        var options = new ModalOptions { DisableBackgroundCancel = false };
+        Modal.Show<SettingsModal>("Settings", options);
+    }
+
+    private void Refresh()
+    {
+        NavigationManager.NavigateTo("/", forceLoad: true);
+    }
+
+    private void ToggleBalance()
+    {
+        _showInBtc = !_showInBtc;
+    }
+}

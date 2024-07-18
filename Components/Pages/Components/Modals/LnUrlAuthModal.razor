@@ -1,0 +1,27 @@
+﻿@inject NavigationManager NavigationManager
+
+<ModalWrapper>
+    <ModalHeader>
+        <span class="modal-title">@Title</span>
+    </ModalHeader>
+    <ModalBody>
+        <div class="text-center">
+            <span>@Message</span>
+        </div>
+    </ModalBody>
+    <ModalFooter>
+        <button type="button" class="btn btn-outline-light custom-button" @onclick="Close">Close</button>
+    </ModalFooter>
+</ModalWrapper>
+
+@code {
+    [CascadingParameter] public BlazoredModalInstance ModalInstance { get; set; } = default!;
+    [Parameter] public string Message { get; set; } = string.Empty;
+    [Parameter] public string Title { get; set; } = "LNURL Auth";
+
+    private async Task Close()
+    {
+        await ModalInstance.CloseAsync();
+        NavigationManager.NavigateTo("/", forceLoad: true);
+    }
+}

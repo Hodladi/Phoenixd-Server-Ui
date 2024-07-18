@@ -1,0 +1,23 @@
+﻿html, body {
+    font-family: 'Pixeloid Sans', PixeloidSans, monospace;
+    background-color: #000000;
+    height: 100%;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.offline-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+    text-align: center;
+}
+
+.offline-message {
+    font-size: 1.5em;
+    color: #ffffff;
+}

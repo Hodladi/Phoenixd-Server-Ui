@@ -1,0 +1,108 @@
+﻿.transactions-list {
+    background-color: #000000;
+    color: white;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.transactions-list-header {
+    background-color: #000000;
+    padding: 0;
+    position: sticky;
+    top: 0;
+    text-align: center;
+    z-index: 1000;
+}
+
+.transactions-list-content {
+    flex-grow: 1;
+    padding: 5px;
+    overflow-y: auto;
+}
+
+.transactions-close-button {
+    font-size: 1.5rem;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: white;
+}
+
+.transactions-list-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.transactions-list-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0px;
+}
+
+.transactions-list-row-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 0;
+}
+
+.transactions-list-header-row {
+    font-weight: bold;
+    background-color: #000000;
+}
+
+.transactions-list-cell {
+    flex: 1;
+    text-align: left;
+    padding: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+    .transactions-list-cell.text-end {
+        text-align: right;
+    }
+
+.transactions-list-row:nth-child(odd) {
+    background-color: #1a1a1a;
+}
+
+.transactions-list-row:nth-child(even) {
+    background-color: #000000;
+}
+
+.incoming {
+    color: green;
+}
+
+.outgoing {
+    color: red;
+}
+
+.wide-cell {
+    flex: 2;
+}
+
+@media (max-width: 640.98px) {
+    .transactions-list-cell {
+        font-size: 0.75rem;
+    }
+
+    .wide-cell {
+        flex: 1.5;
+    }
+
+    .transactions-list-header {
+        font-size: 1.25rem;
+        padding: 8px;
+    }
+
+    .transactions-close-button {
+        padding: 6px 12px;
+        font-size: 1.5rem;
+    }
+}

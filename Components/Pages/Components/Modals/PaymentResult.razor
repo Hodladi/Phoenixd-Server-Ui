@@ -1,0 +1,37 @@
+﻿@using Wallet.Models
+
+@inject NavigationManager NavigationManager
+
+<ModalWrapper>
+    <ModalHeader>
+        <span class="modal-title">Payment info</span>
+    </ModalHeader>
+    <ModalBody>
+        @if (PaymentResponse.Error == String.Empty)
+        {
+            <span>ERROR, failed to pay invoice!</span>
+        }
+        else
+        {
+            <span>Paid amount: @PaymentResponse.RecipientAmountSat?.ToString("N0") sats</span>
+
+            <br />
+            <span>Fee: @PaymentResponse.RoutingFeeSat?.ToString("N0") sats</span>
+            <br />
+            <span>@($"Total spent: {PaymentResponse.RecipientAmountSat + PaymentResponse.RoutingFeeSat} sats")</span><br/>
+        }
+    </ModalBody>
+    <ModalFooter>
+        <button type="button" class="btn btn-outline-light custom-button" @onclick="Close">Close</button>
+    </ModalFooter>
+</ModalWrapper>
+
+@code {
+    [CascadingParameter] public BlazoredModalInstance ModalInstance { get; set; } = default!;
+    [Parameter] public ApiResponse PaymentResponse { get; set; } = new();
+
+    private void Close()
+    {
+        NavigationManager.NavigateTo("/", forceLoad: true);
+    }
+}

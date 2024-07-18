@@ -1,0 +1,83 @@
+﻿@using Wallet.Models
+@using Wallet.Services
+@inject IJSRuntime JsRuntime
+@inject IModalService ModalService
+@inject IApiService ApiService
+
+<div class="custom-modal">
+    <div class="modal-body">
+        <div class="modal-actions">
+            <video id="qr-video"></video>
+        </div>
+            <button type="button" class="btn btn-secondary close-button-qr" @onclick="CloseModal">Close</button>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter] public BlazoredModalInstance ModalInstance { get; set; } = default!;
+    private DotNetObjectReference<QrScannerModal>? _objRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _objRef = DotNetObjectReference.Create(this);
+            await JsRuntime.InvokeVoidAsync("startQrScanner", _objRef);
+        }
+    }
+
+    [JSInvokable]
+    public async Task HandleQrCodeResult(string result)
+    {
+        var lowerResult = result.ToLower();
+        if (lowerResult.StartsWith("lightning:"))
+        {
+            lowerResult = lowerResult.Substring("lightning:".Length);
+        }
+
+        if (lowerResult.StartsWith("lnurl"))
+        {
+            var authResult = await ApiService.LnUrlAuthAsync(result);
+            if (authResult == "authentication success")
+            {
+                await ShowAuthenticationSuccessModal("LNURL Authentication was successful.");
+            }
+            else
+            {
+                await HandleInvoice(result);
+            }
+        }
+        else
+        {
+            await HandleInvoice(result);
+        }
+    }
+
+    private async Task ShowAuthenticationSuccessModal(string message)
+    {
+        await CloseModal();
+        var parameters = new ModalParameters();
+        parameters.Add("Message", message);
+        ModalService.Show<LnUrlAuthModal>("Success", parameters);
+    }
+
+    private async Task HandleInvoice(string invoice)
+    {
+        await CloseModal();
+        var invoiceDetails = new ApiRequest() { Invoice = invoice };
+        var parameters = new ModalParameters();
+        parameters.Add("DecodedInvoiceDetails", invoiceDetails);
+        ModalService.Show<PayInvoiceModal>("Pay invoice", parameters);
+    }
+
+    private async Task CloseModal()
+    {
+        await JsRuntime.InvokeVoidAsync("stopQrScanner");
+        await ModalInstance.CloseAsync();
+    }
+
+    public void Dispose()
+    {
+        _objRef?.Dispose();
+    }
+}

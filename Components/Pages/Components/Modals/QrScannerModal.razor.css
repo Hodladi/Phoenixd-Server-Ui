@@ -1,0 +1,28 @@
+﻿.modal-body {
+    padding: 0;
+}
+
+#qr-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.close-button-qr {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    pointer-events: auto;
+    display: inline-block;
+    width: auto;
+    height: auto;
+    line-height: normal;
+}
