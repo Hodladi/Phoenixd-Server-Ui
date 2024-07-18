@@ -1,4 +1,5 @@
-﻿@inject NavigationManager NavigationManager
+﻿@using System.Globalization
+@inject NavigationManager NavigationManager
 
 <ModalWrapper>
     <ModalHeader>
@@ -7,7 +8,7 @@
     <ModalBody>
         <div>
             <p>Received amount: <span class="bold-text">@AmountSat?.ToString("N0") sats</span></p>
-            <p>Time: <span class="bold-text">@FormattedTimestamp</span></p>
+            <p>Time: <span class="bold-text">@FormattedTimestamp UTC</span></p>
             <p>Payment Hash: <span class="wrap-text bold-text">@PaymentHash</span></p>
         </div>
     </ModalBody>
@@ -23,7 +24,7 @@
     [Parameter] public long? Timestamp { get; set; }
     [Parameter] public string? ExternalId { get; set; }
 
-    private string FormattedTimestamp => Timestamp != null ? DateTimeOffset.FromUnixTimeMilliseconds(Timestamp.Value).ToLocalTime().ToString("yyyy-MM-dd HH:mm") : "N/A";
+    private string FormattedTimestamp => Timestamp != null ? DateTimeOffset.FromUnixTimeMilliseconds(Timestamp.Value).ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) : "N/A";
 
     private async Task Close()
     {
