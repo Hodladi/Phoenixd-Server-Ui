@@ -28,4 +28,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: username/repository:tag
+          tags: hodladi21/phoenixd-server-ui:latest
