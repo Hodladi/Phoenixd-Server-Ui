@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <_ContentIncludedByDefault Remove="wwwroot\js\clipboard.js" />
+    <_ContentIncludedByDefault Remove="wwwroot\loading.css" />
   </ItemGroup>
 
   <ItemGroup>
