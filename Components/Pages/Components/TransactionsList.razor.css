@@ -89,7 +89,7 @@
 
 @media (max-width: 640.98px) {
     .transactions-list-cell {
-        font-size: 0.75rem;
+        font-size: 1rem;
     }
 
     .wide-cell {
@@ -97,7 +97,7 @@
     }
 
     .transactions-list-header {
-        font-size: 1.25rem;
+        font-size: 1.5rem;
         padding: 8px;
     }
 

@@ -33,7 +33,7 @@
     justify-content: center;
     flex-grow: 1;
     width: 100%;
-    margin-top: -8rem;
+    margin-top: -4.5rem;
 }
 
 .home-balance-amount {
@@ -67,7 +67,7 @@
     display: flex;
     justify-content: space-around;
     position: absolute;
-    bottom: 8rem;
+    bottom: 20rem;
     padding: 0 1rem;
 }
 
