@@ -9,6 +9,16 @@
     position: relative;
     overflow: hidden;
 }
+.home-background-image {
+    position: absolute;
+    bottom: 45px; /* Adjust this value to move the image up or down */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px; /* Adjust the size of the image */
+    height: auto;
+    opacity: 0.5; /* Adjust the opacity to make it less distracting */
+    z-index: 1; /* Ensure it is behind other elements */
+}
 
 .home-header {
     width: 100%;
