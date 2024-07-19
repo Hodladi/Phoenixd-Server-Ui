@@ -1,6 +1,6 @@
 # Phoenixd Server UI
 
-You can either self-host it with this repo or you can try use it through https://wallet.nostrich.cc by adding your phoenixd server url and password in settings.
+You can either self-host it with this repo or you can try use it through [pWallet.app](https://pwallet.app) by adding your phoenixd server url and password in settings.
 The settings is only saved in local storage on your device.
 
 This UI with the help of Acinq Phoenix Server can handle the following:
