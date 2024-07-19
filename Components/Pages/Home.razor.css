@@ -9,16 +9,6 @@
     position: relative;
     overflow: hidden;
 }
-.home-background-image {
-    position: absolute;
-    bottom: 45px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 40px;
-    height: auto;
-    opacity: 0.5;
-    z-index: 1;
-}
 
 .home-header {
     width: 100%;
