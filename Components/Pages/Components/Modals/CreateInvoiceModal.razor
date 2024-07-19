@@ -25,8 +25,9 @@
         </div>
     </ModalBody>
     <ModalFooter>
+        <button type="button" class="btn btn-outline-light custom-button me-2" @onclick="Bolt12">BOLT 12</button>
         <button type="button" class="btn btn-outline-light custom-button me-2" @onclick="() => ModalInstance.CancelAsync()">Close</button>
-        <button class="btn btn-outline-light custom-button" @onclick="GenerateInvoice" disabled="@DisableButton">QR</button>
+        <button class="btn btn-outline-light custom-button" @onclick="GenerateInvoice" disabled="@DisableButton">Generate QR</button>
     </ModalFooter>
 </ModalWrapper>
 
@@ -91,5 +92,18 @@
         {
             await _amountInput.FocusAsync();
         }
+    }
+
+    private async Task Bolt12()
+    {
+        var parameters = new ModalParameters();
+        var bolt12Offer = await ApiService.GetBolt12OfferAsync();
+        var bolt12LnAddress = await ApiService.GetBolt12LnAddress();
+        var qrCodeData = await QrCodeService.GenerateQrCode(bolt12Offer.Offer);
+        parameters.Add("QrCodeData", qrCodeData);
+        parameters.Add("Bolt12LnAddress", bolt12LnAddress);
+        parameters.Add("InvoiceString", bolt12Offer.Offer);
+        await ModalInstance.CloseAsync();
+        Modal.Show<Bolt12QrModal>("BOLT12 QR Code", parameters);
     }
 }

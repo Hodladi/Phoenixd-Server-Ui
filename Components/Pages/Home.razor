@@ -196,7 +196,7 @@
     {
         var parameters = new ModalParameters();
         var options = new ModalOptions { DisableBackgroundCancel = false };
-        Modal.Show<BoltSelectionModal>("Select Invoice Type", parameters, options);
+        Modal.Show<CreateInvoiceModal>("Select Invoice Type", parameters, options);
     }
 
     private async Task OpenSendModal()
