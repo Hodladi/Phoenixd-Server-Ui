@@ -4,10 +4,10 @@ using Wallet.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//builder.WebHost.ConfigureKestrel(serverOptions =>
-//{
-//    serverOptions.Listen(System.Net.IPAddress.Any, 2291);
-//});
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.Listen(System.Net.IPAddress.Any, 2291);
+});
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
