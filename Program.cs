@@ -4,14 +4,6 @@ using Wallet.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// UNCOMMENT THE SECTION BELOW IF YOU DONT RUN THE APPLICATION THROUGH DOCKER
-// IF YOU RUN THE APPLICATION THROUGH DOCKER THEN THE PART BELOW MAKES AN ERROR WITH DUPLICATED USAGE OF PORT 2291
-
-//builder.WebHost.ConfigureKestrel(serverOptions =>
-//{
-//    serverOptions.Listen(System.Net.IPAddress.Any, 2291);
-//});
-
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddHttpClient<IApiService, ApiService>();
