@@ -90,10 +90,16 @@ document.addEventListener('focusin', (event) => {
     }
 });
 
-if ('serviceWorker' in navigator && 'periodicSync' in navigator.serviceWorker) {
-    navigator.serviceWorker.ready.then((registration) => {
-        registration.periodicSync.register('keep-alive', {
-            minInterval: 24 * 60 * 60 * 1000 // 24 hours
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/service-worker.js')
+        .then(reg => console.log('Service Worker Registered', reg))
+        .catch(err => console.log('Service Worker Not Registered', err));
+
+    if ('periodicSync' in navigator.serviceWorker) {
+        navigator.serviceWorker.ready.then((registration) => {
+            registration.periodicSync.register('keep-alive', {
+                minInterval: 24 * 60 * 60 * 1000 // 24 hours
+            });
         });
-    });
+    }
 }
