@@ -16,6 +16,10 @@ html, body {
     animation: spin 1s linear infinite;
 }
 
+.cursor-pointer {
+    cursor: pointer;
+}
+
 button[disabled] {
     opacity: 0.5;
     pointer-events: none;
@@ -30,7 +34,7 @@ button[disabled] {
     padding: 0.75rem;
     font-size: 0.9rem;
     margin: 0 0.5rem;
-    
+
 }
 
 .wrap-text {

@@ -14,8 +14,8 @@
         @if (!string.IsNullOrEmpty(QrCodeData))
         {
             <div class="text-center">
-                <div>
-                    <img width="85%" src="data:image/svg+xml;base64,@QrCodeData" alt="QR Code" @onclick="CopyQrCodeData" style="cursor: pointer;" />
+                <div class="cursor-pointer">
+                    <img width="85%" src="data:image/svg+xml;base64,@QrCodeData" alt="QR Code" @onclick="CopyQrCodeData" />
                 </div>
                 <div class="mt-2">
                     <span>Amount: @Amount sats</span><br />
@@ -65,7 +65,7 @@
             };
 
             PaymentNotification paymentNotification = JsonSerializer.Deserialize<PaymentNotification>(message, options);
-        
+
             if (paymentNotification?.Type == "payment_received")
             {
                 await InvokeAsync(async () =>

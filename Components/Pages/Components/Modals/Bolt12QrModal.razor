@@ -13,9 +13,9 @@
     <ModalBody>
         @if (!string.IsNullOrEmpty(QrCodeData))
         {
-            <div class="text-center">
-                <img class="mb-2" width="85%" src="data:image/svg+xml;base64,@QrCodeData" alt="BOLT12 QR Code" @onclick="CopyQrCodeData" style="cursor: pointer;" /><br />
-                <span class="ln-address mt-3" style="cursor: pointer;" @onclick="CopyLnAddressCodeData">@Bolt12LnAddress</span>
+            <div class="text-center cursor-pointer">
+                <img class="mb-2" width="85%" src="data:image/svg+xml;base64,@QrCodeData" alt="BOLT12 QR Code" @onclick="CopyQrCodeData" /><br />
+                <span class="ln-address mt-3" @onclick="CopyLnAddressCodeData">@Bolt12LnAddress</span>
             </div>
         }
     </ModalBody>
