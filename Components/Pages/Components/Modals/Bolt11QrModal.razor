@@ -5,6 +5,7 @@
 @inject IWebSocketService WebSocketService
 @inject IModalService ModalService
 @inject NavigationManager NavigationManager
+@inject IConfigurationService ConfigurationService
 
 <ModalWrapper>
     <ModalHeader>
@@ -40,8 +41,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var baseUrl = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "baseUrl");
-        var authToken = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "password");
+        var baseUrl = await ConfigurationService.GetBaseUrlAsync();
+        var authToken = await ConfigurationService.GetPasswordAsync();
 
         if (string.IsNullOrEmpty(baseUrl) || string.IsNullOrEmpty(authToken))
         {
