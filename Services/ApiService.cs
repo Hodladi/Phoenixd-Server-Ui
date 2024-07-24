@@ -8,12 +8,11 @@ namespace Wallet.Services
 {
     public interface IApiService
     {
-        Task InitializeAsync();
+        Task InitializeAsync(string baseUrl, string password);
         Task<ApiResponse?> GetNodeInfoAsync();
         Task<List<OutgoingPayment>?> GetOutgoingPaymentsAsync(int offset = 0);
         Task<List<IncomingPayment>?> GetIncomingPaymentsAsync(int offset = 0);
         Task<string?> LnUrlAuthAsync(string lnurl);
-
         Task<ApiResponse> GetBolt12OfferAsync();
         Task<string> GetBolt12LnAddress();
         Task<ApiResponse> CreateBolt11InvoiceAsync(ApiRequest apiRequest);
@@ -27,26 +26,23 @@ namespace Wallet.Services
     public class ApiService : IApiService
     {
         private readonly HttpClient _httpClient;
-        private readonly IJSRuntime _jsRuntime;
+        private readonly IConfigurationService _configurationService;
         private bool _isInitialized;
 
-        public ApiService(HttpClient httpClient, IJSRuntime jsRuntime)
+        public ApiService(HttpClient httpClient, IConfigurationService configurationService)
         {
             _httpClient = httpClient;
-            _jsRuntime = jsRuntime;
+            _configurationService = configurationService;
             _isInitialized = false;
         }
 
-        public async Task InitializeAsync()
+        public async Task InitializeAsync(string baseUrl, string password)
         {
             if (_isInitialized) return;
 
-            var baseUrl = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "baseUrl");
-            var password = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "password");
-
             if (string.IsNullOrEmpty(baseUrl) || string.IsNullOrEmpty(password))
             {
-                throw new InvalidOperationException("Base URL or Password is not set in localStorage.");
+                throw new InvalidOperationException("Base URL or Password is not set.");
             }
 
             _httpClient.BaseAddress = new Uri(baseUrl);
@@ -56,7 +52,7 @@ namespace Wallet.Services
 
         public async Task<ApiResponse?> GetNodeInfoAsync()
         {
-            //await InitializeAsync();
+            await EnsureInitializedAsync();
             var response = await _httpClient.GetAsync("getinfo");
 
             if (response.IsSuccessStatusCode)
@@ -71,7 +67,7 @@ namespace Wallet.Services
 
         public async Task<List<OutgoingPayment>?> GetOutgoingPaymentsAsync(int offset = 0)
         {
-            await InitializeAsync();
+            await EnsureInitializedAsync();
             var response = await _httpClient.GetAsync($"payments/outgoing?offset={offset}");
 
             if (response.IsSuccessStatusCode)
@@ -85,7 +81,7 @@ namespace Wallet.Services
 
         public async Task<List<IncomingPayment>?> GetIncomingPaymentsAsync(int offset = 0)
         {
-            await InitializeAsync();
+            await EnsureInitializedAsync();
             var response = await _httpClient.GetAsync($"payments/incoming?offset={offset}");
 
             if (response.IsSuccessStatusCode)
@@ -97,11 +93,9 @@ namespace Wallet.Services
             return new List<IncomingPayment>();
         }
 
-        // #####################################################################################################################
-        
         public async Task<string?> LnUrlAuthAsync(string lnurl)
         {
-            await InitializeAsync();
+            await EnsureInitializedAsync();
             var content = new StringContent($"lnurl={lnurl}", Encoding.UTF8, "application/x-www-form-urlencoded");
             var response = await _httpClient.PostAsync("lnurlauth", content);
 
@@ -115,7 +109,7 @@ namespace Wallet.Services
 
         public async Task<ApiResponse> PayBolt12Invoice(ApiRequest apiRequest)
         {
-            await InitializeAsync();
+            await EnsureInitializedAsync();
             var data = new Dictionary<string, string>
             {
                 { "offer", apiRequest.Invoice! },
@@ -139,9 +133,10 @@ namespace Wallet.Services
                 return response;
             }
         }
+
         public async Task<ApiResponse> PayLightningAddress(ApiRequest apiRequest)
         {
-            await InitializeAsync();
+            await EnsureInitializedAsync();
             var data = new Dictionary<string, string>
             {
                 { "address", apiRequest.Invoice },
@@ -165,9 +160,10 @@ namespace Wallet.Services
                 return response;
             }
         }
+
         public async Task<ApiResponse> PayLnurlInvoice(ApiRequest apiRequest)
         {
-            await InitializeAsync();
+            await EnsureInitializedAsync();
             var data = new Dictionary<string, string>
             {
                 { "lnurl", apiRequest.Invoice },
@@ -191,9 +187,10 @@ namespace Wallet.Services
                 return response;
             }
         }
+
         public async Task<ApiResponse> PayBolt11Invoice(ApiRequest apiRequest)
         {
-            await InitializeAsync();
+            await EnsureInitializedAsync();
             var data = new Dictionary<string, string>
             {
                 { "invoice", apiRequest.Invoice }
@@ -222,9 +219,10 @@ namespace Wallet.Services
                 return response;
             }
         }
+
         public async Task<ApiRequest> DecodeBolt11InvoiceAsync(string invoice)
         {
-            await InitializeAsync();
+            await EnsureInitializedAsync();
             var content = new StringContent($"invoice={invoice}", Encoding.UTF8, "application/x-www-form-urlencoded");
             var response = new ApiRequest();
             var httpResponse = await _httpClient.PostAsync("decodeinvoice", content);
@@ -243,11 +241,12 @@ namespace Wallet.Services
                 return response;
             }
         }
-        public async Task<ApiResponse> CreateBolt11InvoiceAsync(ApiRequest apiRequst)
+
+        public async Task<ApiResponse> CreateBolt11InvoiceAsync(ApiRequest apiRequest)
         {
-            await InitializeAsync();
+            await EnsureInitializedAsync();
             var response = new ApiResponse();
-            var content = new StringContent($"description={apiRequst.Description}&amountSat={apiRequst.AmountSat}", Encoding.UTF8, "application/x-www-form-urlencoded");
+            var content = new StringContent($"description={apiRequest.Description}&amountSat={apiRequest.AmountSat}", Encoding.UTF8, "application/x-www-form-urlencoded");
             var httpResponse = await _httpClient.PostAsync("createinvoice", content);
 
             if (httpResponse.IsSuccessStatusCode)
@@ -263,9 +262,10 @@ namespace Wallet.Services
                 return response;
             }
         }
+
         public async Task<ApiResponse> GetBolt12OfferAsync()
         {
-            await InitializeAsync();
+            await EnsureInitializedAsync();
             var response = new ApiResponse();
             var httpResponse = await _httpClient.GetAsync("getoffer");
 
@@ -280,9 +280,10 @@ namespace Wallet.Services
                 return response;
             }
         }
+
         public async Task<string> GetBolt12LnAddress()
         {
-            await InitializeAsync();
+            await EnsureInitializedAsync();
             var response = await _httpClient.GetAsync("getlnaddress");
 
             if (response.IsSuccessStatusCode)
@@ -292,6 +293,16 @@ namespace Wallet.Services
             else
             {
                 return "Could not get Bolt 12 LN address";
+            }
+        }
+
+        private async Task EnsureInitializedAsync()
+        {
+            if (!_isInitialized)
+            {
+                var baseUrl = await _configurationService.GetBaseUrlAsync();
+                var password = await _configurationService.GetPasswordAsync();
+                await InitializeAsync(baseUrl, password);
             }
         }
     }

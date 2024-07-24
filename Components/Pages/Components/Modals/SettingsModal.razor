@@ -1,32 +1,43 @@
-﻿@inject IJSRuntime Js
+﻿@using Wallet.Services
+@inject IJSRuntime Js
 @inject IModalService Modal
 @inject NavigationManager NavigationManager
+@inject IConfigurationService ConfigurationService
 
 <ModalWrapper>
     <ModalHeader>
         <span class="modal-title">Settings</span>
     </ModalHeader>
     <ModalBody>
-        <div class="mb-3">
-            <label for="baseUrl" class="form-label">Phoenixd server url</label>
-            <input type="text" class="form-control" id="baseUrl" @bind="BaseUrl" @ref="_firstInput" tabindex="1">
-        </div>
-        <div class="mb-3">
-            <label for="password" class="form-label">Phoenixd server password</label>
-            <div class="input-group">
-                <input class="form-control" id="password" @bind="Password" type="@passwordInputType" tabindex="2">
-                <button class="input-group-text custom-input-group-text" type="button" @onclick="ToggleShowPassword">
-                    <i class="bi @(showPassword ? "bi-eye-slash" : "bi-eye")"></i>
-                </button>
+        @if (isConfiguredInAppSettings)
+        {
+            <div class="alert alert-info">
+                The backend settings are fetched from appsettings.json.
             </div>
-        </div>
-        <div class="mb-3">
-            <span>These settings are saved to your local storage on your device, no other places!</span>
-        </div>
+        }
+        else
+        {
+            <div class="mb-3">
+                <label for="baseUrl" class="form-label">Phoenixd server url</label>
+                <input type="text" class="form-control" id="baseUrl" @bind="BaseUrl" @ref="_firstInput" tabindex="1">
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Phoenixd server password</label>
+                <div class="input-group">
+                    <input class="form-control" id="password" @bind="Password" type="@passwordInputType" tabindex="2">
+                    <button class="input-group-text custom-input-group-text" type="button" @onclick="ToggleShowPassword">
+                        <i class="bi @(showPassword ? "bi-eye-slash" : "bi-eye")"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="mb-3">
+                <span>These settings are saved to your local storage on your device, no other places!</span>
+            </div>
+        }
     </ModalBody>
     <ModalFooter>
         <button type="button" class="btn btn-outline-light custom-button" @onclick="() => ModalInstance.CancelAsync()">Close</button>
-        <button type="button" class="btn btn-outline-light custom-button" @onclick="SaveSettings">Save</button>
+        <button type="button" class="btn btn-outline-light custom-button" @onclick="SaveSettings" disabled="@isConfiguredInAppSettings">Save</button>
     </ModalFooter>
 </ModalWrapper>
 
@@ -34,15 +45,20 @@
     [CascadingParameter] public BlazoredModalInstance ModalInstance { get; set; } = default!;
 
     private ElementReference _firstInput;
-    private string BaseUrl { get; set; }
-    private string Password { get; set; }
+    private string BaseUrl { get; set; } = string.Empty;
+    private string Password { get; set; } = string.Empty;
     private bool showPassword;
     private string passwordInputType => showPassword ? "text" : "password";
+    private bool isConfiguredInAppSettings;
 
     protected override async Task OnParametersSetAsync()
     {
-        BaseUrl = await Js.InvokeAsync<string>("localStorage.getItem", "baseUrl") ?? string.Empty;
-        Password = await Js.InvokeAsync<string>("localStorage.getItem", "password") ?? string.Empty;
+        isConfiguredInAppSettings = await ConfigurationService.IsConfiguredInAppSettingsAsync();
+        if (!isConfiguredInAppSettings)
+        {
+            BaseUrl = await ConfigurationService.GetBaseUrlAsync();
+            Password = await ConfigurationService.GetPasswordAsync();
+        }
     }
 
     private void ToggleShowPassword()
@@ -52,17 +68,20 @@
 
     private async Task SaveSettings()
     {
-        await Js.InvokeVoidAsync("localStorage.setItem", "baseUrl", BaseUrl);
-        await Js.InvokeVoidAsync("localStorage.setItem", "password", Password);
+        if (!isConfiguredInAppSettings)
+        {
+            await Js.InvokeVoidAsync("localStorage.setItem", "baseUrl", BaseUrl);
+            await Js.InvokeVoidAsync("localStorage.setItem", "password", Password);
+        }
         await ModalInstance.CloseAsync();
-        NavigationManager.NavigateTo("/", forceLoad:true);
+        NavigationManager.NavigateTo("/", forceLoad: true);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-	    if (firstRender)
-	    {
+        if (firstRender && !isConfiguredInAppSettings)
+        {
             await _firstInput.FocusAsync();
-	    }
+        }
     }
 }

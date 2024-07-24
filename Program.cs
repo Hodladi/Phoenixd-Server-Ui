@@ -11,6 +11,7 @@ builder.Services.AddScoped<IInvoiceTypeService, InvoiceTypeService>();
 builder.Services.AddScoped<IQrCodeService, QrCodeService>();
 builder.Services.AddSingleton<IWebSocketService, WebSocketService>();
 builder.Services.AddBlazoredModal();
+builder.Services.AddScoped<IConfigurationService, ConfigurationService>();
 
 builder.Services.AddServerSideBlazor()
     .AddHubOptions(options =>
