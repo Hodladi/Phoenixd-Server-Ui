@@ -50,19 +50,6 @@ button[disabled] {
     word-wrap: break-word;
 }
 
-.sidemenu-text .regular-text {
-    padding: 10px;
-    font-family: 'Pixeloid Sans', monospace;
-    font-size: 1rem;
-    word-wrap: break-word;
-    margin-top: 10px;
-}
-
-.sidemenu-text-bold .bold-text {
-    font-family: 'Pixeloid Sans Bold', monospace;
-    font-size: 1rem;
-}
-
 .custom-input-group-text
 {
     background-color: #000000;

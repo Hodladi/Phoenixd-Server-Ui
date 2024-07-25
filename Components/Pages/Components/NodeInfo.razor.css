@@ -1,0 +1,78 @@
+﻿.node-info {
+    background-color: #000000;
+    color: white;
+    width: 100%;
+    overflow-y: auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.node-info-content {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.node-info-footer {
+    background-color: #000000;
+    padding: 5px;
+    position: sticky;
+    bottom: 0;
+    text-align: center;
+}
+
+.node-info-close-button {
+    font-size: 1.5rem;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: white;
+}
+
+.node-info-header {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.node-info-text {
+    font-size: 1rem;
+    margin-bottom: 10px;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    hyphens: auto;
+}
+
+.node-info-text-bold {
+    font-size: 1rem;
+    font-weight: bold;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    hyphens: auto;
+}
+
+.node-info-divider {
+    border-top: 1px solid #444;
+    margin: 10px 0;
+}
+
+.node-info-channelinfo {
+    margin-bottom: 20px;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    hyphens: auto;
+}
+
+.hidden {
+    display: none;
+}
+
+.github-icon {
+    font-size: 1.5rem;
+}
+
+.github-icon a {
+    color: white;
+}

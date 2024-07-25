@@ -70,7 +70,7 @@
 </div>
 
 <div class="home-side-menu-overlay @(_showMenu ? "show" : "")">
-    <SideMenu NodeInfo="NodeInfo" IsLoading="@_isLoading" OnClose="ToggleMenu" />
+    <NodeInfo ApiResponse="NodeInfo" IsLoading="@_isLoading" OnClose="ToggleMenu" />
 </div>
 
 <div class="home-transactions-overlay @(_showTransactions ? "show" : "")">

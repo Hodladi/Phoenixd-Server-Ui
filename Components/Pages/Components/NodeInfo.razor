@@ -1,0 +1,75 @@
+﻿@page "/nodeinfo"
+@using Wallet.Models
+
+<div class="node-info">
+    @if (IsLoading)
+    {
+        <div>Loading...</div>
+    }
+    else if (ApiResponse != null)
+    {
+        <div class="node-info-content">
+            <div>
+                <span class="node-info-header">Node info</span>
+                <hr class="node-info-divider" />
+                <span class="node-info-text-bold">Node ID: </span><span class="node-info-text">@ApiResponse.NodeId</span>
+            </div>
+
+            <hr class="node-info-divider" />
+
+            <div>
+                <div class="node-info-header">Channels</div>
+                @foreach (var channel in ApiResponse.Channels)
+                {
+                    <div class="node-info-channelinfo">
+                        <span class="node-info-text-bold">State: </span><span class="node-info-text">@channel.State</span><br />
+                        <span class="node-info-text-bold">Balance: </span><span class="node-info-text">@channel.BalanceSat.ToString("N0") sats</span><br />
+                        <span class="node-info-text-bold">Inbound Liquidity: </span><span class="node-info-text">@channel.InboundLiquiditySat.ToString("N0") sats</span><br />
+                        <span class="node-info-text-bold">Capacity: </span><span class="node-info-text">@channel.CapacitySat.ToString("N0") sats</span><br />
+                        <span class="node-info-text-bold">Channel ID: </span><span class="node-info-text">@channel.ChannelId</span><br />
+                        <span class="node-info-text-bold">Funding Tx ID: </span><span class="node-info-text">@channel.FundingTxId</span>
+                    </div>
+                }
+            </div>
+
+            <hr class="node-info-divider" />
+
+            <div>
+                <span class="node-info-header">App info</span>
+                <span class="github-icon">
+                    <a href="https://github.com/Hodladi/Phoenixd-Server-Ui" target="_blank"><i class="bi bi-github"></i></a>
+                </span><br/>
+                <span class="node-info-text">This is a UI for <a href="https://phoenix.acinq.co/server">Phoenixd Server</a>. Feel free to use it in any way you like. If you need any assistance with this app or want to contribute to the project, feel free to contact me through the channels available below.</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div>No data available</div>
+    }
+
+    <div class="node-info-footer">
+        <button class="btn btn-link text-white node-info-close-button" @onclick="CloseMenu">
+            <i class="bi bi-chevron-up close-button"></i>
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public ApiResponse? ApiResponse { get; set; }
+    [Parameter] public bool IsLoading { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    private bool _showMenu = true;
+
+    private async Task CloseMenu()
+    {
+        _showMenu = false;
+        await OnClose.InvokeAsync();
+    }
+
+    public void ShowMenu()
+    {
+        _showMenu = true;
+        StateHasChanged();
+    }
+}
