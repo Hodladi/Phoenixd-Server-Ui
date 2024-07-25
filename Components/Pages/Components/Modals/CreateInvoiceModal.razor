@@ -26,7 +26,7 @@
     </ModalBody>
     <ModalFooter>
         <button type="button" class="btn btn-outline-light custom-button me-2" @onclick="Bolt12">Bolt12</button>
-        <button type="button" class="btn btn-outline-light custom-button me-2" @onclick="() => ModalInstance.CancelAsync()">Close</button>
+        <button type="button" class="btn btn-outline-light custom-button-close me-2" @onclick="() => ModalInstance.CancelAsync()">Close</button>
         <button class="btn btn-outline-light custom-button" @onclick="GenerateInvoice" disabled="@DisableButton">Create</button>
     </ModalFooter>
 </ModalWrapper>

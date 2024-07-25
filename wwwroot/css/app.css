@@ -34,12 +34,20 @@ button[disabled] {
     padding: 0.75rem;
     font-size: 0.9rem;
     margin: 0 0.5rem;
+}
 
+.custom-button-close {
+    background-color: transparent;
+    border: 1px solid red;
+    border-radius: 5px;
+    color: white;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+    margin: 0 0.5rem;
 }
 
 .wrap-text {
     word-wrap: break-word;
-    /*word-break: break-all;*/
 }
 
 .sidemenu-text .regular-text {
@@ -60,7 +68,7 @@ button[disabled] {
     background-color: #000000;
     color: #ffffff;
     cursor: pointer;
-    border: 1px solid #ced4da; /* Ensures border matches Bootstrap's form control */
+    border: 1px solid #ced4da;
 }
 
 /* TRANSACTIONS */
