@@ -50,3 +50,21 @@ function hideModal(modalId) {
         modal.hide();
     }
 }
+
+window.copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+        console.log('Copied to clipboard successfully!');
+    }, (err) => {
+        console.error('Failed to copy text: ', err);
+    });
+}
+
+window.pasteFromClipboard = async () => {
+    try {
+        const text = await navigator.clipboard.readText();
+        return text;
+    } catch (err) {
+        console.error('Failed to read text from clipboard: ', err);
+        return '';
+    }
+}

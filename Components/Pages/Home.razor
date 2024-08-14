@@ -58,10 +58,7 @@
 
     <div class="home-actions">
         <button class="btn btn-outline-light home-receive-button" @onclick="OpenReceiveModal" disabled="@_isLoading">RECEIVE</button>
-        <div class="mx-2">
-            <i class="bi bi-qr-code-scan home-qr-icon" @onclick="OpenQrScanner"></i>
-        </div>
-        <button class="btn btn-outline-light home-send-button" @onclick="OpenSendModal" disabled="@_isLoading">SEND</button>
+        <button class="btn btn-outline-light home-send-button" @onclick="OpenCombinedCameraInvoiceModal" disabled="@_isLoading">SEND</button>
     </div>
 
     <button class="btn btn-link home-transactions-button" hidden="@(_showTransactions)" @onclick="ToggleTransactions">
@@ -189,7 +186,7 @@
         }
     }
 
-    private void OpenQrScanner()
+    private async Task OpenQrScanner()
     {
         Modal.Show<QrScannerModal>("QR Code Scanner");
     }
@@ -206,6 +203,13 @@
         var parameters = new ModalParameters();
         var options = new ModalOptions { DisableBackgroundCancel = false };
         Modal.Show<EnterInvoiceModal>("Enter Invoice", parameters, options);
+    }
+
+    private async Task OpenCombinedCameraInvoiceModal()
+    {
+        var parameters = new ModalParameters();
+        var options = new ModalOptions { DisableBackgroundCancel = false };
+        Modal.Show<CombinedCameraInvoiceModal>(options);
     }
 
     private async Task OpenSettings()

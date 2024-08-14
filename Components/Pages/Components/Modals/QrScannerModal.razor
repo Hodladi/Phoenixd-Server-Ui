@@ -9,7 +9,7 @@
         <div class="modal-actions">
             <video id="qr-video"></video>
         </div>
-            <button type="button" class="btn btn-secondary close-button-qr" @onclick="CloseModal">Close</button>
+        <button type="button" class="btn btn-secondary close-button-qr" @onclick="CloseModal">Close</button>
     </div>
 </div>
 
@@ -37,14 +37,14 @@
 
         if (lowerResult.StartsWith("lnurl"))
         {
-            var authResult = await ApiService.LnUrlAuthAsync(result);
+            var authResult = await ApiService.LnUrlAuthAsync(lowerResult);
             if (authResult == "authentication success")
             {
                 await ShowAuthenticationSuccessModal("LNURL Authentication was successful.");
             }
             else
             {
-                await HandleInvoice(result);
+                await HandleInvoice(lowerResult);
             }
         }
         else

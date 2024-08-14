@@ -7,20 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="wwwroot\js\clipboard.js" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <_ContentIncludedByDefault Remove="wwwroot\js\clipboard.js" />
     <_ContentIncludedByDefault Remove="wwwroot\loading.css" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="wwwroot\fonts\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="wwwroot\js\clipboard.js" />
   </ItemGroup>
 
   <ItemGroup>

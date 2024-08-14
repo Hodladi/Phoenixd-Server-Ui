@@ -1,0 +1,154 @@
+﻿@using Wallet.Models
+@using Wallet.Services
+@inject IJSRuntime JsRuntime
+@inject IModalService ModalService
+@inject IApiService ApiService
+
+<ModalWrapper>
+    <ModalHeader>
+        <span class="modal-title">Scan / Enter invoice</span>
+    </ModalHeader>
+    <ModalBody>
+        <div class="mb-1">
+            <video class="mb-2" id="qr-video"></video>
+            <div class="input-group">
+                <input type="text" placeholder="invoice / lightning address" class="form-control" id="invoice" @bind="@DecodedInvoiceDetails.Invoice" @ref="_invoiceInput" tabindex="1"/>
+                <button class="input-group-text custom-input-group-text" type="button" @onclick="PasteFromClipboard">
+                    <i class="bi bi-clipboard2"></i>
+                </button>
+            </div>
+        </div>
+    </ModalBody>
+    <ModalFooter>
+        <button type="button" class="custom-button-close me-2" @onclick="CloseModal">Close</button>
+        <button class="btn btn-outline-light custom-button" @onclick="GetDetails" disabled="@DisableButton">Fetch</button>
+    </ModalFooter>
+</ModalWrapper>
+
+
+
+@code {
+    [CascadingParameter] public BlazoredModalInstance ModalInstance { get; set; } = default!;
+    private DotNetObjectReference<CombinedCameraInvoiceModal>? _objRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _invoiceInput.FocusAsync();
+            _objRef = DotNetObjectReference.Create(this);
+            await JsRuntime.InvokeVoidAsync("startQrScanner", _objRef);
+        }
+    }
+
+    [JSInvokable]
+    public async Task HandleQrCodeResult(string result)
+    {
+        var lowerResult = result.ToLower();
+        if (lowerResult.StartsWith("lightning:"))
+        {
+            lowerResult = lowerResult.Substring("lightning:".Length);
+        }
+
+        if (lowerResult.StartsWith("lnurl"))
+        {
+            var authResult = await ApiService.LnUrlAuthAsync(lowerResult);
+            if (authResult == "authentication success")
+            {
+                await ShowAuthenticationSuccessModal("LNURL Authentication was successful.");
+            }
+            else
+            {
+                await HandleInvoice(lowerResult);
+            }
+        }
+        else
+        {
+            await HandleInvoice(lowerResult);
+        }
+    }
+
+    private async Task ShowAuthenticationSuccessModal(string message)
+    {
+        await CloseModal();
+        var parameters = new ModalParameters();
+        parameters.Add("Message", message);
+        ModalService.Show<LnUrlAuthModal>("Success", parameters);
+    }
+
+    private async Task HandleInvoice(string invoice)
+    {
+        await CloseModal();
+        var invoiceDetails = new ApiRequest() { Invoice = invoice };
+        var parameters = new ModalParameters();
+        parameters.Add("DecodedInvoiceDetails", invoiceDetails);
+        ModalService.Show<PayInvoiceModal>("Pay invoice", parameters);
+    }
+
+    private async Task CloseModal()
+    {
+        await JsRuntime.InvokeVoidAsync("stopQrScanner");
+        await ModalInstance.CloseAsync();
+    }
+
+    public void Dispose()
+    {
+        _objRef?.Dispose();
+    }
+
+
+    [Parameter] public ApiRequest DecodedInvoiceDetails { get; set; } = new();
+
+    private bool DisableButton { get; set; }
+    private ElementReference _invoiceInput;
+
+    private async Task GetDetails()
+    {
+
+        await CloseModal();
+        await OpenNextModal(DecodedInvoiceDetails);
+    }
+
+    private async Task OpenNextModal(ApiRequest DecodedInvoiceDetails)
+    {
+        var lowerResult = DecodedInvoiceDetails.Invoice?.ToLower();
+        if (lowerResult!.StartsWith("lightning:"))
+        {
+            lowerResult = lowerResult.Substring("lightning:".Length);
+        }
+
+        DecodedInvoiceDetails.Invoice = lowerResult;
+
+        var authResult = await ApiService.LnUrlAuthAsync(DecodedInvoiceDetails.Invoice);
+        if (authResult != "authentication success")
+        {
+            var parameters = new ModalParameters();
+            parameters.Add("DecodedInvoiceDetails", DecodedInvoiceDetails);
+            ModalService.Show<PayInvoiceModal>("Payment result", parameters);
+        }
+        else
+        {
+            await ShowAuthenticationSuccessModal("LNURL Authentication was successful.");
+        }
+    }
+
+    private async Task PasteFromClipboard()
+    {
+        var clipboardText = await JsRuntime.InvokeAsync<string>("pasteFromClipboard");
+        if (!string.IsNullOrEmpty(clipboardText))
+        {
+            DecodedInvoiceDetails.Invoice = clipboardText;
+            await _invoiceInput.FocusAsync();
+        }
+    }
+
+    // private async Task PasteFromClipboard()
+    // {
+    //     var clipboardText = await JSRuntime.InvokeAsync<string>("pasteFromClipboard");
+    //     if (!string.IsNullOrEmpty(clipboardText))
+    //     {
+    //         DecodedInvoiceDetails.Invoice = clipboardText;
+    //         await _invoiceInput.FocusAsync();
+    //     }
+    // }
+}
