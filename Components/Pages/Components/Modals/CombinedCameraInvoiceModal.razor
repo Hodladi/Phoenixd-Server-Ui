@@ -5,12 +5,9 @@
 @inject IApiService ApiService
 
 <ModalWrapper>
-    <ModalHeader>
-        <span class="modal-title">Scan / Enter invoice</span>
-    </ModalHeader>
     <ModalBody>
         <div class="mb-1">
-            <video class="mb-2" id="qr-video"></video>
+            <video class="mb-1" id="qr-video"></video>
             <div class="input-group">
                 <input type="text" placeholder="invoice / lightning address" class="form-control" id="invoice" @bind="@DecodedInvoiceDetails.Invoice" @ref="_invoiceInput" tabindex="1"/>
                 <button class="input-group-text custom-input-group-text" type="button" @onclick="PasteFromClipboard">

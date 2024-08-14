@@ -1,9 +1,12 @@
 ﻿<div class="custom-modal">
-    <div class="modal-header custom-header">
-        <div class="modal-title">
-            @ModalHeader
+    @if (ModalHeader != null)
+    {
+        <div class="modal-header custom-header">
+            <div class="modal-title">
+                @ModalHeader
+            </div>
         </div>
-    </div>
+    }
     <div class="modal-body">
         <div class="container-fluid">
             @ModalBody
