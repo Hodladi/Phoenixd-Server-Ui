@@ -32,7 +32,7 @@
     {
         if (firstRender)
         {
-            await _invoiceInput.FocusAsync();
+            // await _invoiceInput.FocusAsync();
             _objRef = DotNetObjectReference.Create(this);
             await JsRuntime.InvokeVoidAsync("startQrScanner", _objRef);
         }
