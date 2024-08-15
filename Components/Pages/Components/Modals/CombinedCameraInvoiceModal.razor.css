@@ -2,6 +2,11 @@
     padding: 0;
 }
 
+.qr-video-border {
+    border: 1px solid white; 
+            border-radius: 5px;
+}
+
 #qr-video {
     width: 100%;
     height: 100%;
