@@ -1,7 +1,5 @@
 # Phoenixd Server UI
 
-**Telegram:** https://t.me/pwalletui
-
 You can either self-host it with this repo or you can try use it through [pWallet.app](https://pwallet.app) by adding your phoenixd server url and password in settings.
 If you self-host it you can chose to add your backend settings (baseUrl for phoneix server and also its password) in appsettings.json or you can use settings button in UI to save to local storage.
 The settings is only saved in local storage on your device.
